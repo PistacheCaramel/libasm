@@ -1,15 +1,15 @@
 extern __errno_location
-global	ft_write
+global	ft_read
 
 section	.text
 
-ft_write:
+ft_read:
 	push	rbp
 	mov	rbp, rsp
 
 	call	__errno_location
 	mov	r8, rax	
-	mov	rax, 1
+	mov	rax, 0
 	syscall
 	neg	rax
 	mov	[r8], rax

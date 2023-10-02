@@ -15,11 +15,10 @@ ft_strcpy:
 		jz exit
 		cmp rsi, 0; Check if second argument is not NULL
 		jz exit
-		cmp byte [rsi] , 0
-		jz exit
 		mov r8, [rsi] ; Load the data
 		mov [rdi], r8 ; Copy of the data
-
+		cmp byte [rsi] , 0
+		jz exit
 		inc rsi ; inc of the adress of the src
 		inc rdi ; inc of the address of the dest
 		jmp loop

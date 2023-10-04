@@ -6,6 +6,7 @@
        #include <sys/stat.h>
        #include <fcntl.h>
 #include <errno.h>
+       #include <sys/wait.h>
 
 extern char * ft_strcpy(char *dest, const char *src);
 extern int ft_strlen(char *s);
@@ -76,9 +77,84 @@ void	test_ft_strcmp()
 	
 }
 
+void	print_buffer(char *buffer, size_t size)
+{	
+	if (buffer)
+	{
+		size_t	i = 0;
+		while (i < size && buffer[i])
+			i++;
+		if (i == size)
+			write(1, buffer, size);
+		else
+			write(1, buffer, i);
+	       printf("\n");
+	}
+	else
+		printf("No buffer\n");
+}
+void	write_checks(void *buffer, size_t size, int test)
+{
+	int	fd;
+	int	fd1;
+	int	res;
+	size_t	write_sys;
+	size_t	my_write;
+	int	errno_sys;
+	int	my_errno;
+
+	fd = open("systest", O_CREAT | O_TRUNC, O_RDWR);
+	if (fd < 0)
+		perror("fd0");
+	fd1 = open("test1", O_CREAT | O_TRUNC, O_RDWR);
+	if (fd1 < 0)
+		perror("fd1");
+	write_sys = write(fd, buffer, size);
+	errno_sys = errno;
+	my_write = ft_write(fd1, buffer, size);
+	my_errno = errno;
+	lseek(fd, 0, SEEK_SET);
+	lseek(fd1, 0, SEEK_SET);
+	char	buffer0[size + 1];
+	char	buffer1[size + 1];
+	bzero(buffer0, size + 1);
+	bzero(buffer1, size + 1);
+	if (read(fd, buffer0, size) < 0)
+	{
+		perror("read");
+		return;
+	}
+	if (read(fd1, buffer1, size) < 0)
+	{
+		perror("read");
+		return;
+	}
+	if (close(fd) < 0)
+		perror("close");
+	if (close(fd1) < 0)
+		perror("close");
+	res = memcmp(buffer0, buffer1, size);
+	if (res == 0 && errno_sys == my_errno && my_write == write_sys)
+		printf("Test%d: OK\n", test);
+	else
+	{
+		printf("Test%d: FALSE\nwrite_sys:%ld\nft_write:%ld\nerrno_sys:%d\nerrno_ft_write:%d\n", test, write_sys, my_write, errno_sys, my_errno);
+		write(1, "buffer_write_sys:", strlen("buffer_write_sys:"));
+		print_buffer(buffer0, size);
+		write(1, "buffer_ft_write:", strlen("buffer_write_sys:"));
+		print_buffer(buffer1, size);
+		printf("\n");
+	}
+}
+
 void	test_ft_write()
 {
-		
+	printf("Test with files:\n");
+	write_checks("coucou", 7, 1);
+	write_checks("", 1, 2);
+	write_checks(NULL, 1, 3);
+	remove("systest");
+	remove("test1");
 }
 int	main()
 {
